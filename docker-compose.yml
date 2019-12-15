@@ -1,0 +1,68 @@
+version: '3.2'
+services:
+  prometheus:
+    image: prom/prometheus:v2.14.0
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - monitor-net
+    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus:/etc/prometheus:ro
+    labels:
+      org.label-schema.group: "monitoring"
+
+  alertmanager:
+    image: prom/alertmanager:v0.19.0
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: always
+    expose:
+      - 9093
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  unsee:
+#    image: cloudflare/unsee:v0.8.0
+    image: cloudflare/unsee:v0.9.2
+    networks:
+      - monitor-net
+    environment:
+      - "ALERTMANAGER_URI=default:http://alertmanager:9093"
+      - 
+    restart: always
+#    deploy:
+#    mode: replicated
+#      replicas: 1
+
+#   caddy:
+#     image: stefanprodan/caddy
+#     container_name: caddy
+#     ports:
+#       - "3000:3000"
+#       - "9090:9090"
+#       - "9093:9093"
+#       - "9091:9091"
+#      volumes:
+#       - ./caddy:/etc/caddy
+#      environment:
+#       - ADMIN_USER=${ADMIN_USER:-admin}
+#       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+#      restart: always
+#      networks:
+#       - monitor-net
+#      labels:
+#       org.label-schema.group: "monitoring"
+
+networks:
+  monitor-net:
+    driver: bridge
