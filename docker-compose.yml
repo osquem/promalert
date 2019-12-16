@@ -37,7 +37,7 @@ services:
     networks:
       - monitor-net
     environment:
-      - "ALERTMANAGER_URI=default:http://alertmanager:9093" 
+      - "ALERTMANAGER_URI=http://alertmanager:9093" 
     restart: always
 #    deploy:
 #    mode: replicated
